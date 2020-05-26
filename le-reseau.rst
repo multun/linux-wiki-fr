@@ -112,10 +112,6 @@ dernier message du destinataire venait.
 
 ..
   Au fur et à mesure qu'ils échangent des messages, les ordinateurs du réseau
-  apprennent quels sont les différents ordinateurs au bout de leurs liens. Quand
-  ils ne savent pas où envoyer un message, ils envoient une copie du message sur
-  par tous leurs liens! Comme ça, le destinataire, si il existe, aura forcément
-  reçu le message.
 
 Les réseaux IP
 --------------
@@ -132,19 +128,21 @@ c'est un message qui est destiné à toutes les machines du réseau ethernet!
 Et c'est plutôt fréquent.
 
 Et tout ça, ça pose problème: si le réseau est trop gros, les machines du réseau
-passeront tout temps à recevoir des messages destinés à tout le monde.
+passeront beaucoup trop de temps à recevoir des messages destinés à tout le monde.
 
-La source du problème est qu'une adresse MAC ne dit rien sur sa position dans le
-réseau. Quand une machine reçoit un message à transférer et ne connaît pas le
-destinataire, elle est bien obligée de l'envoyer partout dans le doute.
+La source du problème est qu'une adresse MAC ne dit rien sur la position d'une
+machine dans le réseau. Quand une machine reçoit un message à transférer et ne
+connaît pas le destinataire, elle est bien obligée de l'envoyer partout dans le
+doute.
 
 Alors que dans un réseau IP, les adresses sont organisées pour rendre les choses
-plus faciles, comme les adresses postales.
+plus faciles, comme des adresses postales.
 
 Quand vous envoyez une lettre au 16 Rue du chat qui Danse à Bagneux, votre
 bureau de poste a pas besoin de savoir où est la Rue du chat qui danse
-exactement, il se contente d'envoyer la lettre dans la région de Bagneux, qui va
-l'envoyer à bagneux, qui va la faire livrer dans la bonne rue.
+exactement, il se contente d'envoyer la lettre dans la région où se trouve
+Bagneux, qui va l'envoyer au bureau de poste de Bagneux, qui va la faire livrer
+dans la bonne rue.
 
 Et bien les réseaux IP, ça fonctionne un peu parreil.
 
@@ -155,7 +153,13 @@ On pourrait imaginer que le premier nombre correspond au pays, le second à la r
 troisième de ville, et ainsi de suite. En pratique c'est un peu plus compliqué,
 mais l'idée est là.
 
-Allez, un exemple. Dans ce schéma, chaque bulle est un réseau. Pour l'exemple,
+Allez, un exemple.
+
+.. slide::
+
+   réseau maison
+
+Dans ce schéma, chaque bulle est un réseau. Pour l'instant,
 on va partir du principe que les machines de chaque réseau peuvent communiquer
 entre elles, et on parlera plus tard de comment.
 
@@ -164,23 +168,79 @@ ordinateurs et une box, et on voit que la box est dans une position
 particulière: elle est à cheval entre deux réseaux.
 
 Le premier réseau c'est celui de la maison, qui a des adresses en 1.2.3. quelque
-chose. En haut on voit aussi un bout du second réseau, que la box va utiliser
+chose. À droite on voit aussi un bout du second réseau, que la box va utiliser
 pour communiquer avec le fournisseur d'accès internet. Ici, la box a pour
-adresse 1.2.10.5 dans le réseau du fournisseur.
+adresse 1.2.10.3 dans le réseau du fournisseur.
 
 Quand une machine veut transmettre un message dans un réseau IP, y'a deux cas de
 figure: soit la destination est dans le même réseau et on peut directement la
-contacter, soit elle est ailleurs. Dans ce cas, on doit
+contacter, soit elle est ailleurs. Dans ce cas, en fonction de l'adresse de
+destination, un intermédiaire va être choisi pour relayer le message.
+
+Par exemple, si l'ordinateur veut contacter la box, il peut le faire directement.
+Par contre, si il veut contacter un machine en dehors du réseau, comme un site
+internet, il va faire passer ses messages par la box.
+
+Et pour choisir quoi faire exactement, on utilise une table de routage!
+En gros, c'est une liste de règles comme ça:
 
 - si la destination commence par 1.2.3, le message passe par le lien truc
+- si le message commence par autre chose, on l'envoie via 1.2.3.1
 
-Ces règles ont un nom: ce sont des routes!
+Chaque règle s'appelle une route, et c'est peut-être le concept le plus
+important d'internet.
+
+Là c'était un petit exemple, mais ça marche aussi à très grande échelle:
+
+.. slide::
+
+   réseau ville
+
+Ce schéma, c'est la carte du réseau d'une petite ville: il y a deux quartiers, le
+quartier rouge a deux maisons, et le quartier bleu en a 3. Chaque point est une
+machine, chaque rond barré est un routeur, et chaque bulle est un réseau. Les
+routeurs avec des lettres sont les boxs dans des maisons, c'est deux là c'est les routeurs de
+quartier, et celui tout en haut c'est le routeur de la ville. Ici chaque routeur
+sert de passerelle entre le réseau dont il est responsable et le reste.
+
+à gauche du schéma, il y a les adresses des machines pour chaque réseau de la carte.
+
+Et vous allez voir qu'avec du routage bien fait, tout ce beau monde peut
+communiquer sans problème.
+
+Imaginons que cette machine de la maison C veuille envoyer un message à cette
+machine de la maison A. La machine qui envoie le message aurait une route vers
+la box de sa maison, qui aurait une route vers la box de la maison A, qui
+relaierait le message vers sa destination finale.
+
+Si une machine en dehors de la ville veut contacter une machine de la maison E,
+on va d'abord passer par le routeur central de la ville, puis par le routeur du
+quartier rouge, puis par la box de la maison E, avant d'enfin arriver à destination.
+
+Comme autre exemple, si la box de la maison D vent envoyer un message à la
+box de la maison B, le message va être routé vers le routeur du quartier rouge,
+puis vers le routeur du quartier bleu, puis directement envoyé sur le réseau du
+quartier bleu.
+
+Ça sera sûrement plus clair avec une vraie table de routage: j'ai choisi
+d'écrire celle du routeur du quartier rouge. Chaque ligne commence par une
+description des adresses pour lesquelles la route s'applique, et se termine par
+le chemin que la route décrit.
+
+Si plusieurs routes correspondent, on choisit la plus précise. Par exemple, si
+on envoie un message à 1.1.1.1, la première et la deuxième route correspondent,
+mais la seconde est plus spécifique, du coup le message partira vers le routeur
+du quartier bleu.
+
+Une route "via" décrit un chemin qui passe par un intermédiaire, et une route
+"sur" décrit un chemin direct.
 
 Ethernet et IP
 --------------
 
 Si j'ai parlé d'ethernet et d'IP, c'est que les deux sont très, très largement
-utilisés en même temps!
+utilisés en même temps! En fait, IP ne peut pas fonctionner sans un protocole
+comme ethernet.
 
 Ethernet permet de communiquer simplement à courte distance, et de distinguer
 les machines les unes des autres. IP permet de communiquer efficacement peu
@@ -190,12 +250,7 @@ En général, chaque machine du réseau a à la fois une adresse MAC, et une adr
 IP.
 
 Encore plus fou, la plupart des messages échangés sont des messages ethernet
-contenant un message IP!
-
-Quand un message IP arrive dans le sous réseau, il est mis dans un message
-ethernet pour pouvoir être délivré localement.
-
-Quand un message IP n'est pas à destination du sous réseau, il est embalé dans un
+contenant un messageftination du sous réseau, il est embalé dans un
 message ethernet à destination de la machine en connection avec le reste du monde.
 
 Histoire de ne pas avoir un système à part à pour les messages qui ne quittent
