@@ -28,18 +28,20 @@ ma requête va parvenir au moteur, qui va me renvoyer une réponse. Et
 aujourd'hui, on va essayer de comprendre comment ma requête parvient au moteur,
 et comment parviens la réponse.
 
-Si j'avait mon ordinateur et le moteur de recherche directement branchés
-ensemble, ça serait pratiquement aussi simple qu'un téléphone yaourt:
-on enverrait le message sous la forme d'un signal électrique dans le lien,
-et le moteur de recherche pourrait le recevoir.
+Apriori, les communications entre ordinateur, c'est pas compliqué: on a des
+fils, et on envoie de l'électricité dedans pour transmettre des messages, c'est
+comme du morse, mais avec de l'électricité.
 
-Sauf qu'on a pas du tout ça, vu que mon ordinateur est pas directement branché
-au moteur de recherche. On a plein de machines branchées ensemble, qui doivent
-coopérer pour relayer le message jusqu'à sa destination.
+Sauf qu'en fait, personne a une ligne directe entre son ordinateur et un moteur de
+recherche. En pratique, on a plein de machines branchées ensemble, qui doivent
+coopérer pour relayer les messages jusqu'à leur destination.
 
 Y'a plusieurs systèmes de relai de messages sur internet, et les deux plus
 importants travaillent ensemble pour transférer vos vidéos de chat: IP, et
 ethernet.
+
+C'est un peu deux langues différentes, c'est des manières de communiquer.
+En fait, ce sont des protocoles.
 
 Les messages
 ------------
@@ -56,6 +58,8 @@ s'appelle un packet, et un message ethernet une trame.
 Les réseaux ethernet
 --------------------
 
+TODO: bien montrer les MACs
+
 .. slides::
 
    une slide illustrative
@@ -63,31 +67,45 @@ Les réseaux ethernet
 On va commencer par parler du protocole qui est le plus central lorsque votre ordinateur
 communique avec votre box, ethernet.
 
-Imaginez que vous venez d'entrer à l'université, et que personne ne se connaît.
-C'est le premier jour, et les élèves doivent distribuer eux-mêmes les papiers
-administratif.
+Vous êtes facteur dans un drôle de village:
 
-Vous prenez un papier, et il est à destination de George Abitbol. Sauf que vous
-connaissez personne, du coup vous êtes obligés de chercher George en annonçant
-son nom un peu partout.
+ - tout le monde ignore les adresses sur le pallier et envoie lettres avec juste
+   le prénom du destinataire sur le devant, et le leur derrière
+ - les gens ne râlent pas quand ils reçoivent du courrier par erreur, ni quand
+   on ouvre leur courrier
+ - il n'y a pas de bureau de poste, et pour envoyer du courrier, les gens le
+   posent sur leur boite aux lettres
+ 
+Vous êtes ethernet, le nouveau facteur dans ce village, et vous devez livrer
+une lettre à destination d'un certain Georges, sans communiquer directement avec
+les habitants. Comment vous faites?
 
-Vous livrez quelques autres papiers de la même manière, et surprise, vous tombez
-sur un autre papier destiné à George.
+Et quand vous ne savez pas où envoyer la lettre, vous êtes obligés de...
 
-Cette fois, vous savez exactement comment contacter George :)
+A) changer de métier
+B) la recopier plein de fois, et d'en déposer une copie devant toutes les maisons du village
+C) pris de désespoir, vous toquez à toutes les portes
 
-Et bien les réseaux ethernet fonctionnent un peu parreil!
+La bonne réponse est la B! Dans le doute, le message est envoyé à tout le monde.
 
-Déjà, chaque carte réseau a un identifiant unique, assigné lors de sa
-fabrication: l'adresse MAC. Il est utilisé comme le prénom dans l'exemple précédent.
+Heureusement, vous êtes pas obligés de le faire souvent: quand quelqu'un envoie
+du courrier, vous notez dans quelle maison vit la personne qui a envoyé la
+lettre. Du coup, au fur et à mesure que les gens envoient du courrier, vous
+apprenez où livrer les lettres.
 
-Et puis comme un élève dans une nouvelle classe, de base, dans un réseau ethernet,
-les ordinateurs ne savent pas avec qui ils peuvent communiquer. Chaque
-ordinateur est en lien avec un certain nombre d'autres machines, sans vraiment
-savoir qui est au bout de chaque lien!
+Vous vous en doutez sûrement, ethernet fonctionne parreil: dans chaque machine,
+il y a une carte réseau, qui a un identifiant unique, assigné lors de sa
+fabrication: l'adresse MAC. Il est utilisé comme le prénom dans l'exemple
+précédent.
+
+Et puis une machine dans un réseau ethernet a des liens vers d'autres machines,
+mais ne sait pas ce qu'il y a au bout, un peu comme le facteur ne sait pas qui
+vit dans la maison.
 
 Bon ok, votre ordinateur vient d'arriver sur le réseau, et il veut envoyer un
 message.
+
+L'équivalent du village serait un réseau ethernet, qu'on appelle parfois segment.
 
 Il envoie le message par son seul lien, et la machine au bout du fil le reçoit.
 Le message est pas pour elle, du coup elle le transfère, mais elle a plusieurs
@@ -110,6 +128,8 @@ veut envoyer un message, si elle n'a jamais vu de message provenant du
 destinataire, elle l'envoie partout dans le doute, sinon elle l'envoie d'où le
 dernier message du destinataire venait.
 
+NOTE: exemples pasclairs
+NOTE: prénoms to MAC
 ..
   Au fur et à mesure qu'ils échangent des messages, les ordinateurs du réseau
 
@@ -117,7 +137,7 @@ Les réseaux IP
 --------------
 
 Du coup ethernet c'est bien, mais ça a un gros défaut, si on envoie un message à
-une machine que personne connaît, chaque intermédiaire va être obligé de
+une machine qu'aucun intermédiaire ne connaît, chaque intermédiaire va être obligé de
 l'envoyer à tous ses voisins pour s'assurer que le message arrive à destination.
 Ça veut dire que si le réseau comporte un million de machines, et qu'on envoie un
 message à un destinataire inconnu, tout le monde sur le réseau va recevoir le
@@ -163,7 +183,7 @@ Dans ce schéma, chaque bulle est un réseau. Pour l'instant,
 on va partir du principe que les machines de chaque réseau peuvent communiquer
 entre elles, et on parlera plus tard de comment.
 
-La bulle à gauche correspond au réseau d'une maison. Il y a deux
+La bulle à gauche correspond au réseau d'une maison. Il y un
 ordinateurs et une box, et on voit que la box est dans une position
 particulière: elle est à cheval entre deux réseaux.
 
@@ -208,10 +228,12 @@ sert de passerelle entre le réseau dont il est responsable et le reste.
 Et vous allez voir qu'avec du routage bien fait, tout ce beau monde peut
 communiquer sans problème.
 
+TODO: infobulle avec les messages
+
 Imaginons que cette machine de la maison C veuille envoyer un message à cette
-machine de la maison A. La machine qui envoie le message aurait une route vers
-la box de sa maison, qui aurait une route vers la box de la maison A, qui
-relaierait le message vers sa destination finale.
+machine de la maison A. La machine qui envoie le message a une route vers
+la box de sa maison, qui a une route vers la box de la maison A, qui
+relaie le message vers sa destination finale.
 
 Si une machine en dehors de la ville veut contacter une machine de la maison E,
 on va d'abord passer par le routeur central de la ville, puis par le routeur du
@@ -238,55 +260,81 @@ Une route "via" décrit un chemin qui passe par un intermédiaire, et une route
 Ethernet et IP
 --------------
 
+FAIRE UN SCHEMA, refactor, SPACLAIR
+
 Si j'ai parlé d'ethernet et d'IP, c'est que les deux sont très, très largement
 utilisés en même temps! En fait, IP ne peut pas fonctionner sans un protocole
 comme ethernet.
 
-Ethernet permet de communiquer simplement à courte distance, et de distinguer
-les machines les unes des autres. IP permet de communiquer efficacement peu
-importe le nombre de machines.
+Ethernet permet à des petits groupes de machines de communiquer ensemble, et IP
+permet aux messages de voyager de groupe en groupe jusqu'à leur destination.
 
-En général, chaque machine du réseau a à la fois une adresse MAC, et une adresse
-IP.
+Quand une machine envoie un message IP, il est emballé dans un message ethernet
+pour voyager dans le segment. Quand le message atteint un routeur intermédiaire,
+le message IP est sorti de son packet ethernet, et mis dans un nouveau packet
+ethernet à destination du routeur suivant.
 
-Encore plus fou, la plupart des messages échangés sont des messages ethernet
-contenant un messageftination du sous réseau, il est embalé dans un
-message ethernet à destination de la machine en connection avec le reste du monde.
+En fait, la destination du packet IP ne change pas au fil du trajet: C'est le
+packet ethernet qui le contient qui change.
 
-Histoire de ne pas avoir un système à part à pour les messages qui ne quittent
-pas le sous réseau, on envoie généralement aussi des messages IP embalés dans un
-message ethernet.
+Même dans le même segment ethernet, les machines mettent des messages IP dans
+leurs messages ethernet, pour éviter d'avoir un système à part pour communiquer
+entre machines d'un même segment.
 
 .. slide::
 
    Schéma
 
-Quand un message à pour destination finale une machine du même réseau ethernet,
-l'adresse de destination MAC et IP désigne la même machine.
+ARP
+---
 
-Et au final, c'est vrai qu'il y a deux adresses pour la même machine, mais elles
-ont pas le même rôle, l'adresse ip c'est un peu comme une adresse postale, elle
-donne des infos sur ou est ce que la machine se situe dans le réseau, là ou
-l'adresse mac c'est plus comme un prénom.
+Mais il y a un problème:
+Imaginons qu'un routeur reçoive un message, et qu'il détermine qu'il doive le
+transférer à une certaine adresse IP, comme 192.168.0.42. Comment est-ce que le
+routeur trouve la destination du message ethernet qui va emballer le message IP?
 
-Et encore une fois, c'est un peu comme dans la vraie vie. Quand vous envoyez un
-message ip à certaines destinations, vous savez directement comment le faire
-parvenir à destination, car vous êtes sur place. Par contre, pour certains
-messages, vous préférez faire confiance à quelqu'un d'autre, un peu comme on
-fait confiance à la poste pour faire parvenir nos lettres à destination.
+DHCP
+----
 
-Quand le bureau de poste reçoit la lettre, il effectue le même raisonnement:
-il délivre directement le message si possible, et le transfère à un
-intermediaire susceptible de connaître la suite du chemin.
-s
-Pour savoir quelles adresses sont à portées, et à qui faire confiance quand
-un réseau n'est pas directement accessible, chaque machine utilise une liste de
-règles:
-sa table de routage.
+Vous vous êtes peut-être demandé plus tôt dans la vidéo qui décide quelle
+adresse IP aura une machine. Et bien il y a plusieurs réponses possibles:
 
-Et une table de routage, ça ressemble un peu à ça. Chaque règle s'applique
-seulement si elle la destination commence par un certain préfixe, et prend la
-décision de quoi en faire:
+ - soit c'est un être humain qui l'a choisie
+ - soit c'est une machine qui l'a attribuée
 
- - considérer que la destination est directement joignable avec ethernet
- - passer par un intermédiaire
+La seconde option est la plus commune pour les utilisateurs finaux; si vous
+allez dans les paramètres réseau de votre téléphone, vous aurez probablement la
+possibilité de choisir vous-même l'adresse IP de votre téléphone, mais ce n'est
+pas l'option par défaut.
+
+Pour découvrir quelle est son adresse IP, une machine va envoyer un message
+ethernet à tout le monde sur le réseau, en se présentant et demandant une
+adresse.
+
+Une des machines du réseau peut alors répondre, en donnant une adresse IP, une
+table de routage, et potentiellement d'autres informations.
+
+DNS
+---
+
+Il manque encore un ingrédient: quand vous naviguez sur internet, vous accédez
+jamais à un site par son adresse IP. Pourtant, c'est possible! si vous tapez
+http://193.17.73.18 dans un navigateur, vous tombez sur prologin.
+
+Les ingénieurs réseau se sont rendus compte assez vite que mémoriser une suite
+de chiffre n'est pas exactement pratique: lors de la genèse d'internet, les
+utilisateurs s'échangaient un document avec une liste de noms de sites et leur
+adresse IP.
+
+Puis, au fur à mesure de la croissance d'internet, la pratique est devenue
+intenable, et un autre système a été développé: DNS.
+
+Le protocole est un peu compliqué, et on en parlera plus en profondeur dans une
+autre vidéo. DNS permet d'associer des informations à un nom de domaine, comme
+lemonde.fr, ou wikipedia.org.
+
+TODO: expliquer ce qu'est un serveur, ou enlever le mot
+
+Pour obtenir ces informations, on contacte un serveur DNS, qui va nous répondre
+avec par exemple, l'adresse IP qu'on lui a demandé.
+
